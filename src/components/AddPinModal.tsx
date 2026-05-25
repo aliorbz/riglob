@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { searchLocation, LocationSearchResult } from '@/lib/location';
 import { RIGLOB_CONFIG, DiscordRole, ROLE_ORDER } from '@/config/riglob';
 import { useToast } from './Toast';
-import { X, Upload, MapPin, Loader2, Sparkles, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { X, Upload, MapPin, Loader2, Sparkles, ShieldCheck } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface AddPinModalProps {
@@ -149,44 +149,7 @@ export const AddPinModal: React.FC<AddPinModalProps> = ({ isOpen, onClose, onSuc
     setIsSubmitting(true);
 
     try {
-      // If we are in mockMode and wallet is not connected, allow mock submission
-      const isMockFlow = RIGLOB_CONFIG.mockMode && !isConnected;
 
-      if (isMockFlow) {
-        setStatusMessage('Mock Mode: Simulating database entry...');
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        
-        const mockAddress = `0xmock${Math.random().toString(16).substring(2, 10)}ffffff`;
-        const base64Avatar = await fileToBase64(avatarFile);
-
-        // Save mock pin to Supabase (if keys exist, otherwise write mock log)
-        try {
-          const { error } = await supabase.from('pins').insert({
-            name: name.trim(),
-            role,
-            location_name: selectedLocation.name,
-            latitude: selectedLocation.latitude,
-            longitude: selectedLocation.longitude,
-            profile_image_url: base64Avatar,
-            wallet_address: mockAddress,
-            tx_hash: 'mock',
-            device_hash: 'mock-device',
-          });
-
-          if (error) throw error;
-        } catch (dbErr) {
-          console.warn('Failed to insert mock into Supabase, saving to localStorage only:', dbErr);
-        }
-
-        // Store local submit state
-        localStorage.setItem('riglob_has_submitted', 'true');
-        setIsSubmitting(false);
-        toast('success', 'Mock pin added to RiGlob!');
-        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-        onSuccess();
-        onClose();
-        return;
-      }
 
       // Web3 Validations
       if (!isConnected || !address) {
@@ -322,14 +285,6 @@ export const AddPinModal: React.FC<AddPinModalProps> = ({ isOpen, onClose, onSuc
 
         {/* Content Form */}
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 flex-1">
-          {RIGLOB_CONFIG.mockMode && !isConnected && (
-            <div className="p-3 border border-amber-500/30 bg-amber-950/20 rounded-xl text-xs text-amber-400 flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-              <div>
-                <strong>Mock Mode Active:</strong> You are not connected. Submitting will register a simulated wallet pin in Supabase without requiring RITUAL tokens.
-              </div>
-            </div>
-          )}
 
           {/* Name */}
           <div>

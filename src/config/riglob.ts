@@ -29,7 +29,7 @@ export const RIGLOB_CONFIG = {
   supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'your-anon-key',
   
   // Development Mode Settings
-  mockMode: true, // Set to true to load 20 mock pins and test without wallet/transactions
+  mockMode: false, // Set to true to load 20 mock pins and test without wallet/transactions
 };
 
 export type DiscordRole = 'Mod' | 'Radiant Ritualist' | 'Zealot' | 'Ritualist' | 'Ritty' | 'Bitty' | 'None';
