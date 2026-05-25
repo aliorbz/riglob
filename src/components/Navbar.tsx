@@ -36,7 +36,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenModal, showAddButton }) =>
           {showAddButton && (
             <button
               onClick={onOpenModal}
-              className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl border border-[#00ff66] bg-[#00ff66] text-black font-semibold text-sm shadow-[0_0_15px_rgba(0,255,102,0.3)] hover:shadow-[0_0_25px_rgba(0,255,102,0.5)] transition-all duration-300 transform hover:scale-[1.02]"
+              className="flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 rounded-xl border border-[#00ff66] bg-[#00ff66] text-black font-extrabold text-xs md:text-sm shadow-[0_0_15px_rgba(0,255,102,0.3)] hover:shadow-[0_0_25px_rgba(0,255,102,0.5)] transition-all duration-300 transform hover:scale-[1.02] shrink-0"
             >
               Pin Yourself
             </button>

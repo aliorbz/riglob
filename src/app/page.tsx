@@ -8,6 +8,7 @@ import { ToastProvider, useToast } from '@/components/Toast';
 import { Navbar } from '@/components/Navbar';
 import { UserDetailPanel } from '@/components/UserDetailPanel';
 import { RoleLegend } from '@/components/RoleLegend';
+import { SearchPanel } from '@/components/SearchPanel';
 import { AddPinModal } from '@/components/AddPinModal';
 import { PinTooltip } from '@/components/PinTooltip';
 import { Compass } from 'lucide-react';
@@ -138,6 +139,7 @@ function MainDashboard() {
       <div className="absolute inset-0 w-full h-full z-10">
         <GlobeScene
           pins={dbPins}
+          selectedPin={selectedPin}
           onSelectPin={setSelectedPin}
           onHoverPin={setHoveredPin}
         />
@@ -146,46 +148,56 @@ function MainDashboard() {
       {/* Hover Tooltip Overlay */}
       {hoveredPin && <PinTooltip hoverData={hoveredPin} />}
 
-      {/* Expand/Collapse Floating Toggle Button for Dashboard Panel */}
+      {/* Slide-out peeking button at the left edge when collapsed */}
       {!isSidebarOpen && (
         <button
           onClick={() => setIsSidebarOpen(true)}
-          className="absolute left-6 top-24 md:top-28 z-20 flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 bg-black/60 text-white backdrop-blur-md hover:bg-white/5 transition-all text-xs font-mono font-bold tracking-wider uppercase shadow-[0_0_15px_rgba(0,0,0,0.5)] border-emerald-500/20"
+          className="absolute left-0 top-[35%] z-30 flex items-center gap-2 pl-4 pr-3 py-3.5 rounded-r-2xl border-y border-r border-[#00ff66]/30 bg-black/85 text-white backdrop-blur-md hover:bg-zinc-900 transition-all duration-300 shadow-[0_0_20px_rgba(0,255,102,0.15)] hover:shadow-[0_0_25px_rgba(0,255,102,0.35)] group border-l-0 pointer-events-auto"
         >
-          <Compass className="w-4 h-4 text-[#00ff66] animate-pulse" />
-          Show Dashboard
+          <Compass className="w-5 h-5 text-[#00ff66] animate-[spin_8s_linear_infinite]" />
+          <span className="text-[10px] font-bold font-mono tracking-widest uppercase hidden md:inline group-hover:text-[#00ff66] transition-colors">
+            Open Console
+          </span>
         </button>
       )}
 
-      {/* Floating Left Dashboard Sidebar */}
-      {isSidebarOpen && (
-        <div className="absolute left-6 top-24 md:top-28 z-20 w-[340px] max-w-[calc(100vw-48px)] max-h-[calc(100vh-140px)] overflow-y-auto flex flex-col gap-4 pointer-events-auto pr-2 scrollbar-none animate-[fadeIn_0.2s_ease-out]">
-          {/* Dashboard Title & Collapse Handler */}
-          <div className="flex items-center justify-between glass-panel p-3.5 rounded-2xl w-full border-[#00ff66]/15 bg-black/65 backdrop-blur-md">
-            <span className="text-[10px] text-gray-400 font-mono tracking-widest uppercase font-bold flex items-center gap-1.5">
-              <Compass className="w-3.5 h-3.5 text-[#00ff66] animate-[spin_8s_linear_infinite]" />
-              RiGlob Console
-            </span>
-            <button
-              onClick={() => setIsSidebarOpen(false)}
-              className="text-[10px] font-bold font-mono text-gray-400 hover:text-[#00ff66] transition-colors border border-white/10 hover:border-[#00ff66]/30 px-2.5 py-1.5 rounded-xl bg-white/5"
-            >
-              COLLAPSE PANEL
-            </button>
-          </div>
-
-          {/* Profile / Stats Inspection Panel */}
-          <UserDetailPanel
-            selectedPin={selectedPin}
-            connectedWallet={address || undefined}
-            totalPins={dbPins.length}
-            onClearSelection={handleClearSelection}
-          />
-
-          {/* Discord Role Color Guide */}
-          <RoleLegend />
+      {/* Floating Left Dashboard Sidebar Container with smooth translate class transition */}
+      <div 
+        className={`absolute left-6 top-24 md:top-28 z-20 w-[340px] max-w-[calc(100vw-48px)] max-h-[calc(100vh-140px)] overflow-y-auto flex flex-col gap-4 pointer-events-auto pr-2 scrollbar-none transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          isSidebarOpen ? 'translate-x-0 opacity-100 visible' : '-translate-x-[120%] opacity-0 invisible pointer-events-none'
+        }`}
+      >
+        {/* Dashboard Title & Collapse Handler */}
+        <div className="flex items-center justify-between glass-panel p-3.5 rounded-2xl w-full border-[#00ff66]/15 bg-black/65 backdrop-blur-md">
+          <span className="text-[10px] text-gray-400 font-mono tracking-widest uppercase font-bold flex items-center gap-1.5">
+            <Compass className="w-3.5 h-3.5 text-[#00ff66] animate-[spin_8s_linear_infinite]" />
+            RiGlob Console
+          </span>
+          <button
+            onClick={() => setIsSidebarOpen(false)}
+            className="text-[10px] font-bold font-mono text-gray-400 hover:text-[#00ff66] transition-colors border border-white/10 hover:border-[#00ff66]/30 px-2.5 py-1.5 rounded-xl bg-white/5"
+          >
+            COLLAPSE PANEL
+          </button>
         </div>
-      )}
+
+        {/* Profile / Stats Inspection Panel */}
+        <UserDetailPanel
+          selectedPin={selectedPin}
+          connectedWallet={address || undefined}
+          totalPins={dbPins.length}
+          onClearSelection={handleClearSelection}
+          onFocusPin={setSelectedPin}
+          onOpenPinModal={handleOpenModal}
+          hasPinnedUser={hasPinned}
+        />
+
+        {/* Discord Role Color Guide */}
+        <RoleLegend pins={dbPins} />
+
+        {/* Search Panel */}
+        <SearchPanel pins={dbPins} onSelectPin={setSelectedPin} />
+      </div>
 
       {/* Welcome & Wallet Hints Overlay for First-load / Disconnected */}
       {!isConnected && (

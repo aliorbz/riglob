@@ -8,14 +8,34 @@ import { ROLE_CONFIGS, DiscordRole } from '@/config/riglob';
 
 interface GlobeSceneProps {
   pins: PinData[];
+  selectedPin: PinData | null;
   onSelectPin: (pin: PinData) => void;
   onHoverPin: (hoverData: { pin: PinData; x: number; y: number } | null) => void;
 }
 
-export default function GlobeScene({ pins, onSelectPin, onHoverPin }: GlobeSceneProps) {
+export default function GlobeScene({ pins, selectedPin, onSelectPin, onHoverPin }: GlobeSceneProps) {
   const globeRef = useRef<any>();
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+
+  // Focus on selected pin with animation
+  useEffect(() => {
+    if (!globeRef.current || !selectedPin) return;
+
+    const globe = globeRef.current;
+    const controls = globe.controls();
+    
+    if (controls) {
+      controls.autoRotate = false;
+    }
+
+    // Fly to the coordinates of the selected pin
+    globe.pointOfView({
+      lat: selectedPin.latitude,
+      lng: selectedPin.longitude,
+      altitude: 1.6, // Zoomed-in preview altitude
+    }, 1500);
+  }, [selectedPin]);
 
   // Handle window resizing
   useEffect(() => {

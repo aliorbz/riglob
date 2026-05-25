@@ -3,9 +3,22 @@
 import React, { useState } from 'react';
 import { ROLE_CONFIGS, ROLE_ORDER } from '@/config/riglob';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { PinData } from '@/lib/supabase';
 
-export const RoleLegend: React.FC = () => {
+interface RoleLegendProps {
+  pins: PinData[];
+}
+
+export const RoleLegend: React.FC<RoleLegendProps> = ({ pins }) => {
   const [isExpanded, setIsExpanded] = useState(true);
+
+  const roleCounts = React.useMemo(() => {
+    const counts: Record<string, number> = {};
+    pins.forEach((pin) => {
+      counts[pin.role] = (counts[pin.role] || 0) + 1;
+    });
+    return counts;
+  }, [pins]);
 
   return (
     <div className="glass-panel rounded-2xl p-4 w-full select-none transition-all duration-300">
@@ -15,7 +28,7 @@ export const RoleLegend: React.FC = () => {
       >
         <h3 className="text-[#00ff66] text-xs font-bold font-mono tracking-wider uppercase flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-[#00ff66] animate-pulse"></span>
-          Discord Role Legend
+          Ritualized Peoples
         </h3>
         <span className="text-gray-400 group-hover:text-[#00ff66] transition-colors p-0.5 rounded hover:bg-white/5">
           {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -27,6 +40,7 @@ export const RoleLegend: React.FC = () => {
           {ROLE_ORDER.map((role) => {
             const config = ROLE_CONFIGS[role];
             const isMod = role === 'Mod';
+            const count = roleCounts[role] || 0;
             
             return (
               <div key={role} className="flex items-center justify-between text-sm py-1 border-b border-white/5 last:border-b-0">
@@ -47,7 +61,10 @@ export const RoleLegend: React.FC = () => {
                       style={{ color: config.color }}
                     />
                   </div>
-                  <span className="text-gray-300 font-medium text-xs">{role}</span>
+                  <span className="text-gray-300 font-medium text-xs flex items-center gap-1.5">
+                    {role}
+                    <span className="text-gray-500 font-bold font-mono text-[10px]">({count})</span>
+                  </span>
                 </div>
                 
                 {/* Badge Preview */}
