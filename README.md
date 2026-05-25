@@ -102,7 +102,7 @@ export const RIGLOB_CONFIG = {
 
   // Fee and Receiver
   submitFeeEth: '0.001', // Submission cost in RITUAL
-  adminReceiverWallet: '0x7a28e9C0d6A15E8D2E49c66914b434F47384Adf2', // Replace with your admin address
+  adminReceiverWallet: '0x2483e02233bd992ac1B8Ec5006320C726B6377fA', // Configured receiver address
   
   // Toggle mock pins on startup
   mockMode: true,

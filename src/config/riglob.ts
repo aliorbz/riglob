@@ -20,10 +20,9 @@ export const RIGLOB_CONFIG = {
       default: { name: 'Ritual Explorer', url: 'https://explorer.ritualfoundation.org' },
     },
   },
-
   // Fee and Receiver
   submitFeeEth: '0.001', // in RITUAL (equivalent to ether in viem parsing)
-  adminReceiverWallet: '0x7a28e9C0d6A15E8D2E49c66914b434F47384Adf2', // Replace with admin/receiver address
+  adminReceiverWallet: '0x2483e02233bd992ac1B8Ec5006320C726B6377fA', // Configured receiver address
   
   // Supabase (can be overriden by process.env)
   supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://your-supabase-project.supabase.co',
