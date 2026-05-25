@@ -164,13 +164,7 @@ export const AddPinModal: React.FC<AddPinModalProps> = ({ isOpen, onClose, onSuc
         return;
       }
 
-      // Check one-device rule client-side
-      const localSubmitted = localStorage.getItem('riglob_has_submitted') === 'true';
-      if (localSubmitted) {
-        toast('error', 'This device has already pinned itself on RiGlob.');
-        setIsSubmitting(false);
-        return;
-      }
+
 
       // Check wallet duplicate in Supabase
       setStatusMessage('Checking duplicate submissions...');

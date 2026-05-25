@@ -37,7 +37,6 @@ function MainDashboard() {
   const [selectedPin, setSelectedPin] = useState<PinData | null>(null);
   const [hoveredPin, setHoveredPin] = useState<{ pin: PinData; x: number; y: number } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [deviceSubmitted, setDeviceSubmitted] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   // 1. Fetch pins from Supabase
@@ -88,12 +87,9 @@ function MainDashboard() {
     };
   }, [toast]);
 
-  // 2. Client checks: device registration & screen responsive default sidebars
+  // 2. Screen responsive default sidebars
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const hasSubmitted = localStorage.getItem('riglob_has_submitted') === 'true';
-      setDeviceSubmitted(hasSubmitted);
-
       // Auto-collapse sidebar on mobile screens for clean immersive map view
       if (window.innerWidth < 768) {
         setIsSidebarOpen(false);
@@ -101,20 +97,15 @@ function MainDashboard() {
     }
   }, []);
 
-  // Determine if this user (either by device localstorage or by connected wallet address) has already submitted a pin
+  // Determine if this user (by connected wallet address) has already submitted a pin
   const hasPinned = useMemo(() => {
-    if (deviceSubmitted) return true;
     if (isConnected && address && dbPins.length > 0) {
       return dbPins.some((p) => p.wallet_address.toLowerCase() === address.toLowerCase());
     }
     return false;
-  }, [deviceSubmitted, isConnected, address, dbPins]);
+  }, [isConnected, address, dbPins]);
 
   const handleOpenModal = () => {
-    if (deviceSubmitted) {
-      toast('error', 'This device has already pinned itself on RiGlob.');
-      return;
-    }
     if (isConnected && address && dbPins.some(p => p.wallet_address.toLowerCase() === address.toLowerCase())) {
       toast('error', 'This wallet has already pinned itself.');
       return;
