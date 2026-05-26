@@ -111,18 +111,64 @@ export const AddPinModal: React.FC<AddPinModalProps> = ({ isOpen, onClose, onSuc
     setShowLocationDropdown(false);
   };
 
-  // Convert file to base64
-  const fileToBase64 = (file: File): Promise<string> => {
+  // Compress image client side to 128x128 JPEG format for fast uploads & lightweight database storage
+  const compressImageFile = (file: File): Promise<{ blob: Blob; base64: string }> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const max_size = 128;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > max_size) {
+              height = Math.round((height * max_size) / width);
+              width = max_size;
+            }
+          } else {
+            if (height > max_size) {
+              width = Math.round((width * max_size) / height);
+              height = max_size;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve({ blob: file, base64: event.target?.result as string });
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const reader2 = new FileReader();
+              reader2.readAsDataURL(blob);
+              reader2.onloadend = () => {
+                resolve({ blob, base64: reader2.result as string });
+              };
+            } else {
+              resolve({ blob: file, base64: event.target?.result as string });
+            }
+          }, 'image/jpeg', 0.85);
+        };
+        img.onerror = (err) => reject(err);
+      };
+      reader.onerror = (err) => reject(err);
     });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('[RiGlob] Submission started...');
 
     // 1. Validations
     if (!name || name.trim().length === 0) {
@@ -149,24 +195,25 @@ export const AddPinModal: React.FC<AddPinModalProps> = ({ isOpen, onClose, onSuc
     setIsSubmitting(true);
 
     try {
-
+      console.log('[RiGlob] Connected address:', address);
 
       // Web3 Validations
       if (!isConnected || !address) {
+        console.error('[RiGlob] Wallet not connected.');
         toast('error', 'Connect your wallet first.');
         setIsSubmitting(false);
         return;
       }
 
       if (!isCorrectNetwork) {
+        console.error('[RiGlob] Incorrect network chainId.');
         toast('error', 'Switch to Ritual testnet.');
         setIsSubmitting(false);
         return;
       }
 
-
-
       // Check wallet duplicate in Supabase
+      console.log('[RiGlob] Checking duplicate submissions in database...');
       setStatusMessage('Checking duplicate submissions...');
       const { data: existingPins, error: checkErr } = await supabase
         .from('pins')
@@ -174,56 +221,64 @@ export const AddPinModal: React.FC<AddPinModalProps> = ({ isOpen, onClose, onSuc
         .eq('wallet_address', address.toLowerCase());
 
       if (checkErr) {
-        console.warn('Database connection issue, bypassing check:', checkErr.message);
+        console.warn('[RiGlob] Database connection check issue, bypassing:', checkErr.message);
       } else if (existingPins && existingPins.length > 0) {
+        console.error('[RiGlob] Duplicate registration detected for wallet:', address);
         toast('error', 'This wallet has already pinned itself.');
         setIsSubmitting(false);
         return;
       }
 
       // 2. Web3 Transaction Flow
+      console.log('[RiGlob] Sending 0.001 RITUAL transaction fee...');
       setStatusMessage(`Sending 0.001 RITUAL transaction...`);
       const txHash = await sendFeeTransaction();
+      console.log('[RiGlob] Transaction hash received:', txHash);
 
       setStatusMessage('Transaction pending, waiting for confirmation...');
       toast('info', 'Transaction pending... Please wait.');
 
-      // Wait for tx confirmation (simulate wait, or standard await receipt if supported)
-      // Since standard receipt listening requires publicClient, we simulate a 3-second block time check
+      // Wait for tx confirmation
       await new Promise((resolve) => setTimeout(resolve, 3000));
+      console.log('[RiGlob] Transaction confirmation block complete.');
       toast('success', 'Transaction confirmed.');
 
-      // 3. Avatar Upload Flow
+      // 3. Avatar Compression & Upload Flow
+      console.log('[RiGlob] Compressing avatar image...');
+      setStatusMessage('Compressing avatar...');
+      const compressed = await compressImageFile(avatarFile);
+      console.log('[RiGlob] Image compression complete.');
+
       setStatusMessage('Uploading profile picture...');
       let profileImageUrl = '';
 
       try {
-        const fileExt = avatarFile.name.split('.').pop();
+        const fileExt = avatarFile.name.split('.').pop() || 'jpg';
         const fileName = `${address.toLowerCase()}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
         const filePath = `${fileName}`;
 
-        // Attempt to upload image to bucket
+        console.log('[RiGlob] Uploading compressed avatar blob to storage path:', filePath);
         const { error: uploadErr } = await supabase.storage
           .from('profile-pictures')
-          .upload(filePath, avatarFile);
+          .upload(filePath, compressed.blob);
 
         if (uploadErr) {
           throw uploadErr;
         }
 
-        // Get public URL
         const { data: urlData } = supabase.storage
           .from('profile-pictures')
           .getPublicUrl(filePath);
 
         profileImageUrl = urlData.publicUrl;
+        console.log('[RiGlob] Supabase storage upload successful. URL:', profileImageUrl);
       } catch (err) {
-        console.warn('Supabase storage upload failed or not configured. Falling back to base64 encoding...', err);
-        // Fallback: Convert to Base64 to store directly in text column
-        profileImageUrl = await fileToBase64(avatarFile);
+        console.warn('[RiGlob] Supabase storage failed, falling back to base64 encoding...', err);
+        profileImageUrl = compressed.base64;
       }
 
       // 4. Save to Database
+      console.log('[RiGlob] Saving pin details to pins table...');
       setStatusMessage('Saving details to database...');
       const { error: insertErr } = await supabase.from('pins').insert({
         name: name.trim(),
@@ -237,9 +292,11 @@ export const AddPinModal: React.FC<AddPinModalProps> = ({ isOpen, onClose, onSuc
       });
 
       if (insertErr) {
+        console.error('[RiGlob] Database insertion query failed:', insertErr);
         throw insertErr;
       }
 
+      console.log('[RiGlob] Pin registered successfully in database.');
       // 5. Done!
       localStorage.setItem('riglob_has_submitted', 'true');
       toast('success', 'Pin added to RiGlob!');
@@ -247,6 +304,7 @@ export const AddPinModal: React.FC<AddPinModalProps> = ({ isOpen, onClose, onSuc
       onSuccess();
       onClose();
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Submission failed:', err);
       let errorMsg = 'Submission failed. Please check network settings and balance.';

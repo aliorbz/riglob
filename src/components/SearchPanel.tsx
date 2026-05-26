@@ -24,7 +24,7 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ pins, onSelectPin }) =
   }, [pins, query]);
 
   return (
-    <div className="glass-panel rounded-2xl p-4 w-full select-none transition-all duration-300">
+    <div className="glass-panel rounded-2xl p-4 w-full select-none">
       <div 
         className="flex items-center justify-between cursor-pointer group border-b border-white/5 pb-3 mb-3.5"
         onClick={() => setIsExpanded(!isExpanded)}

@@ -21,7 +21,7 @@ export const RoleLegend: React.FC<RoleLegendProps> = ({ pins }) => {
   }, [pins]);
 
   return (
-    <div className="glass-panel rounded-2xl p-4 w-full select-none transition-all duration-300">
+    <div className="glass-panel rounded-2xl p-4 w-full select-none">
       <div 
         className="flex items-center justify-between cursor-pointer group"
         onClick={() => setIsExpanded(!isExpanded)}

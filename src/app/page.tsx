@@ -154,7 +154,7 @@ function MainDashboard() {
 
       {/* Floating Left Dashboard Sidebar Container with smooth translate class transition */}
       <div 
-        className={`absolute left-6 top-24 md:top-28 z-20 w-[340px] max-w-[calc(100vw-48px)] max-h-[calc(100vh-140px)] overflow-y-auto flex flex-col gap-4 pointer-events-auto pr-2 scrollbar-none transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        className={`absolute left-6 top-24 md:top-28 z-20 w-[340px] max-w-[calc(100vw-48px)] max-h-[calc(100vh-140px)] overflow-y-auto flex flex-col gap-4 pointer-events-auto pr-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-zinc-950/20 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#00ff66]/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-[#00ff66]/40 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
           isSidebarOpen ? 'translate-x-0 opacity-100 visible' : '-translate-x-[120%] opacity-0 invisible pointer-events-none'
         }`}
       >

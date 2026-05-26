@@ -44,7 +44,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
     const roleStyle = ROLE_CONFIGS[selectedPin.role as DiscordRole] || ROLE_CONFIGS['None'];
 
     return (
-      <div className="glass-panel rounded-2xl p-5 w-full relative overflow-hidden transition-all duration-300 border-[#00ff66]/30 shadow-[0_0_25px_rgba(0,0,0,0.8)]">
+      <div className="glass-panel rounded-2xl p-5 w-full relative overflow-hidden border-[#00ff66]/30 shadow-[0_0_25px_rgba(0,0,0,0.8)]">
         {/* Glow effect matching role */}
         <div
           className="absolute -top-12 -right-12 w-24 h-24 rounded-full blur-2xl opacity-40 pointer-events-none"
@@ -189,7 +189,7 @@ export const UserDetailPanel: React.FC<UserDetailPanelProps> = ({
 
   // Deselected/Default State
   return (
-    <div className="glass-panel rounded-2xl p-5 w-full relative overflow-hidden select-none transition-all duration-300">
+    <div className="glass-panel rounded-2xl p-5 w-full relative overflow-hidden select-none">
       <div 
         className="flex items-center justify-between cursor-pointer group border-b border-white/5 pb-3 mb-4"
         onClick={() => setIsExpanded(!isExpanded)}

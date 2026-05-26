@@ -99,10 +99,9 @@ const ToastItem: React.FC<{ toast: ToastMessage; onClose: () => void }> = ({ toa
 
   return (
     <div
-      className="flex items-start gap-3 p-4 rounded-xl border backdrop-blur-md pointer-events-auto transition-all duration-300 transform translate-y-0 animate-[slideIn_0.2s_ease-out]"
+      className={`flex items-start gap-3 p-4 rounded-xl border backdrop-blur-md pointer-events-auto transition-all duration-300 transform translate-y-0 animate-[slideIn_0.2s_ease-out] ${config.border}`}
       style={{
         backgroundColor: config.bg,
-        borderColor: config.border.split(' ')[0].split('/')[0], // Extract boundary border
       }}
     >
       <div className={`p-1 rounded-lg ${config.border} border bg-black/40`}>
