@@ -16,9 +16,16 @@ CREATE TABLE IF NOT EXISTS public.pins (
   device_hash TEXT
 );
 
--- 2. Disable Row Level Security (RLS) to allow public writes
--- This allows anyone to insert their pins. If you want to use custom RLS policies, you can enable RLS and write appropriate policies.
+-- 2. Configure Row Level Security (RLS) to allow public reads and writes
+-- This disables RLS, and sets up explicit permissive policies so that client-side connections can insert and query pins cleanly.
 ALTER TABLE public.pins DISABLE ROW LEVEL SECURITY;
+
+-- If RLS is enabled or enforced by Supabase, define permissive public policies:
+DROP POLICY IF EXISTS "Allow public read access" ON public.pins;
+DROP POLICY IF EXISTS "Allow public insert access" ON public.pins;
+
+CREATE POLICY "Allow public read access" ON public.pins FOR SELECT USING (true);
+CREATE POLICY "Allow public insert access" ON public.pins FOR INSERT WITH CHECK (true);
 
 -- 3. Create search index for fast query lookups on wallet addresses
 CREATE INDEX IF NOT EXISTS pins_wallet_idx ON public.pins (wallet_address);

@@ -60,8 +60,14 @@ create table public.pins (
   device_hash text
 );
 
--- Disable Row Level Security (RLS) to allow public wallet inserts
+-- Disable Row Level Security (RLS) to allow public writes
 alter table public.pins disable row level security;
+
+-- If RLS is enabled or enforced, define explicit public insert and select policies:
+drop policy if exists "Allow public read access" on public.pins;
+drop policy if exists "Allow public insert access" on public.pins;
+create policy "Allow public read access" on public.pins for select using (true);
+create policy "Allow public insert access" on public.pins for insert with check (true);
 
 -- Index search for wallet addresses
 create index pins_wallet_idx on public.pins (wallet_address);
