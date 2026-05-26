@@ -159,7 +159,7 @@ function MainDashboard() {
         }`}
       >
         {/* Dashboard Title & Collapse Handler */}
-        <div className="flex items-center justify-between glass-panel p-3.5 rounded-2xl w-full border-[#00ff66]/15 bg-black/65 backdrop-blur-md">
+        <div className="shrink-0 flex items-center justify-between glass-panel p-3.5 rounded-2xl w-full border-[#00ff66]/15 bg-black/65 backdrop-blur-md">
           <span className="text-[10px] text-gray-400 font-mono tracking-widest uppercase font-bold flex items-center gap-1.5">
             <Compass className="w-3.5 h-3.5 text-[#00ff66] animate-[spin_8s_linear_infinite]" />
             RiGlob Console
@@ -173,21 +173,27 @@ function MainDashboard() {
         </div>
 
         {/* Profile / Stats Inspection Panel */}
-        <UserDetailPanel
-          selectedPin={selectedPin}
-          connectedWallet={address || undefined}
-          totalPins={dbPins.length}
-          onClearSelection={handleClearSelection}
-          onFocusPin={setSelectedPin}
-          onOpenPinModal={handleOpenModal}
-          hasPinnedUser={hasPinned}
-        />
+        <div className="shrink-0 w-full">
+          <UserDetailPanel
+            selectedPin={selectedPin}
+            connectedWallet={address || undefined}
+            totalPins={dbPins.length}
+            onClearSelection={handleClearSelection}
+            onFocusPin={setSelectedPin}
+            onOpenPinModal={handleOpenModal}
+            hasPinnedUser={hasPinned}
+          />
+        </div>
 
         {/* Discord Role Color Guide */}
-        <RoleLegend pins={dbPins} />
+        <div className="shrink-0 w-full">
+          <RoleLegend pins={dbPins} />
+        </div>
 
         {/* Search Panel */}
-        <SearchPanel pins={dbPins} onSelectPin={setSelectedPin} />
+        <div className="shrink-0 w-full">
+          <SearchPanel pins={dbPins} onSelectPin={setSelectedPin} />
+        </div>
       </div>
 
       {/* Welcome & Wallet Hints Overlay for First-load / Disconnected */}

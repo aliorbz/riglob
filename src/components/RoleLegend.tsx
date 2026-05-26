@@ -61,15 +61,18 @@ export const RoleLegend: React.FC<RoleLegendProps> = ({ pins }) => {
                       style={{ color: config.color }}
                     />
                   </div>
-                  <span className="text-gray-300 font-medium text-xs flex items-center gap-1.5">
+                  <span className="text-gray-300 font-medium text-xs">
                     {role}
-                    <span className="text-gray-500 font-bold font-mono text-[10px]">({count})</span>
                   </span>
                 </div>
                 
-                {/* Badge Preview */}
-                <span className={config.badgeClass}>
-                  {role}
+                {/* Count number placed at the very right */}
+                <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold tracking-wider ${
+                  count > 0 
+                    ? 'text-[#00ff66] bg-[#00ff66]/10 border border-[#00ff66]/30 shadow-[0_0_8px_rgba(0,255,102,0.15)]' 
+                    : 'text-gray-600 bg-white/[0.02] border border-white/5'
+                }`}>
+                  {count}
                 </span>
               </div>
             );
