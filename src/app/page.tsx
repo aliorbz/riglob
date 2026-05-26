@@ -186,14 +186,18 @@ function MainDashboard() {
         </div>
 
         {/* Discord Role Color Guide */}
-        <div className="shrink-0 w-full">
-          <RoleLegend pins={dbPins} />
-        </div>
+        {!selectedPin && (
+          <div className="shrink-0 w-full animate-[fadeIn_0.3s_ease-out]">
+            <RoleLegend pins={dbPins} />
+          </div>
+        )}
 
         {/* Search Panel */}
-        <div className="shrink-0 w-full">
-          <SearchPanel pins={dbPins} onSelectPin={setSelectedPin} />
-        </div>
+        {!selectedPin && (
+          <div className="shrink-0 w-full animate-[fadeIn_0.3s_ease-out]">
+            <SearchPanel pins={dbPins} onSelectPin={setSelectedPin} />
+          </div>
+        )}
       </div>
 
       {/* Welcome & Wallet Hints Overlay for First-load / Disconnected */}

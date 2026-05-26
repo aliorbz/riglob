@@ -9,7 +9,7 @@ import { ROLE_CONFIGS, DiscordRole } from '@/config/riglob';
 interface GlobeSceneProps {
   pins: PinData[];
   selectedPin: PinData | null;
-  onSelectPin: (pin: PinData) => void;
+  onSelectPin: (pin: PinData | null) => void;
   onHoverPin: (hoverData: { pin: PinData; x: number; y: number } | null) => void;
 }
 
@@ -170,7 +170,11 @@ export default function GlobeScene({ pins, selectedPin, onSelectPin, onHoverPin 
   };
 
   return (
-    <div ref={containerRef} className="w-full h-full relative cursor-grab active:cursor-grabbing">
+    <div
+      ref={containerRef}
+      className="w-full h-full relative cursor-grab active:cursor-grabbing"
+      onClick={() => onSelectPin(null)}
+    >
       <Globe
         ref={globeRef}
         width={dimensions.width}
@@ -182,6 +186,7 @@ export default function GlobeScene({ pins, selectedPin, onSelectPin, onHoverPin 
         showAtmosphere={true}
         atmosphereColor="#00ff66"
         atmosphereAltitude={0.15}
+        onGlobeClick={() => onSelectPin(null)}
         
         // Grid Lines
         showGraticules={true}
