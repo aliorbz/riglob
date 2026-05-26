@@ -17,6 +17,18 @@ export default function GlobeScene({ pins, selectedPin, onSelectPin, onHoverPin 
   const globeRef = useRef<any>();
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+  const [countries, setCountries] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch('//unpkg.com/three-globe/example/img/ne_110m_admin_0_countries.geojson')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.features) {
+          setCountries(data.features);
+        }
+      })
+      .catch((err) => console.error('Error loading countries GeoJSON:', err));
+  }, []);
 
   // Focus on selected pin with animation
   useEffect(() => {
@@ -146,25 +158,39 @@ export default function GlobeScene({ pins, selectedPin, onSelectPin, onHoverPin 
     el.appendChild(pulse);
 
     // Hover Events
-    el.onmouseenter = (e) => {
+    el.addEventListener('mouseenter', (e) => {
       onHoverPin({ pin, x: e.clientX, y: e.clientY });
       nameLabel.style.opacity = '1';
-    };
+    });
 
-    el.onmouseleave = () => {
+    el.addEventListener('mouseleave', () => {
       onHoverPin(null);
       nameLabel.style.opacity = '0.7';
+    });
+
+    el.addEventListener('mousemove', (e) => {
+      onHoverPin({ pin, x: e.clientX, y: e.clientY });
+    });
+
+    // Prevent propagation of mouse and pointer down/up events so OrbitControls doesn't rotate the globe or swallow clicks
+    const blockPropagation = (e: Event) => {
+      e.stopPropagation();
+      if (e.stopImmediatePropagation) {
+        e.stopImmediatePropagation();
+      }
     };
 
-    el.onmousemove = (e) => {
-      onHoverPin({ pin, x: e.clientX, y: e.clientY });
-    };
+    el.addEventListener('mousedown', blockPropagation);
+    el.addEventListener('mouseup', blockPropagation);
+    el.addEventListener('pointerdown', blockPropagation);
+    el.addEventListener('pointerup', blockPropagation);
 
     // Click Event
-    el.onclick = (e) => {
+    el.addEventListener('click', (e) => {
       e.stopPropagation();
+      e.preventDefault();
       onSelectPin(pin);
-    };
+    });
 
     return el;
   };
@@ -187,6 +213,14 @@ export default function GlobeScene({ pins, selectedPin, onSelectPin, onHoverPin 
         atmosphereColor="#00ff66"
         atmosphereAltitude={0.15}
         onGlobeClick={() => onSelectPin(null)}
+
+        // Polygons (greenish land & thin neon green country borders)
+        polygonsData={countries}
+        polygonCapColor={() => 'rgba(0, 255, 102, 0.08)'} // Land part a bit greenish (very transparent green overlay)
+        polygonSideColor={() => 'rgba(0, 0, 0, 0)'}
+        polygonStrokeColor={() => '#00ff66'} // Thin neon green line separating countries
+        polygonAltitude={0.006}
+        onPolygonClick={() => onSelectPin(null)}
 
         // Grid Lines
         showGraticules={true}
