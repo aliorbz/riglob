@@ -66,7 +66,9 @@ export const SearchPanel: React.FC<SearchPanelProps> = ({ pins, onSelectPin }) =
                 return (
                   <div
                     key={pin.id}
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
                       onSelectPin(pin);
                       setQuery(''); // Reset query after select
                     }}
