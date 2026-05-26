@@ -24,7 +24,7 @@ export default function GlobeScene({ pins, selectedPin, onSelectPin, onHoverPin 
 
     const globe = globeRef.current;
     const controls = globe.controls();
-    
+
     if (controls) {
       controls.autoRotate = false;
     }
@@ -118,12 +118,12 @@ export default function GlobeScene({ pins, selectedPin, onSelectPin, onHoverPin 
     img.src = pin.profile_image_url || 'https://via.placeholder.com/80/121214/00ff66?text=R';
     img.alt = pin.name;
     img.className = 'custom-globe-marker-avatar';
-    
+
     // Fallback image in case of loading error
     img.onerror = () => {
       img.src = `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(pin.wallet_address)}`;
     };
-    
+
     el.appendChild(img);
 
     // Dynamic name indicator above marker
@@ -180,17 +180,17 @@ export default function GlobeScene({ pins, selectedPin, onSelectPin, onHoverPin 
         width={dimensions.width}
         height={dimensions.height}
         backgroundColor="rgba(0,0,0,0)" // Transparent to reveal cyber-grid and stars behind
-        
+
         // Earth Textures & Styles
         globeImageUrl="//unpkg.com/three-globe/example/img/earth-dark.jpg"
         showAtmosphere={true}
         atmosphereColor="#00ff66"
         atmosphereAltitude={0.15}
         onGlobeClick={() => onSelectPin(null)}
-        
+
         // Grid Lines
         showGraticules={true}
-        
+
         // Custom HTML Marker Setup
         htmlElementsData={pins}
         htmlLat={(d: any) => d.latitude}
