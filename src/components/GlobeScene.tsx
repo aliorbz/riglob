@@ -5,30 +5,20 @@ import React, { useEffect, useRef, useState } from 'react';
 import Globe from 'react-globe.gl';
 import { PinData } from '@/lib/supabase';
 import { ROLE_CONFIGS, DiscordRole } from '@/config/riglob';
+import countriesData from '@/config/countries.json';
 
 interface GlobeSceneProps {
   pins: PinData[];
   selectedPin: PinData | null;
   onSelectPin: (pin: PinData | null) => void;
-  onHoverPin: (hoverData: { pin: PinData; x: number; y: number } | null) => void;
 }
 
-export default function GlobeScene({ pins, selectedPin, onSelectPin, onHoverPin }: GlobeSceneProps) {
+export default function GlobeScene({ pins, selectedPin, onSelectPin }: GlobeSceneProps) {
   const globeRef = useRef<any>();
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
-  const [countries, setCountries] = useState<any[]>([]);
+  const countries = (countriesData as any).features;
 
-  useEffect(() => {
-    fetch('//unpkg.com/three-globe/example/img/ne_110m_admin_0_countries.geojson')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data && data.features) {
-          setCountries(data.features);
-        }
-      })
-      .catch((err) => console.error('Error loading countries GeoJSON:', err));
-  }, []);
 
   // Focus on selected pin with animation
   useEffect(() => {
@@ -149,7 +139,7 @@ export default function GlobeScene({ pins, selectedPin, onSelectPin, onHoverPin 
     nameLabel.style.fontFamily = 'monospace';
     nameLabel.style.color = '#fff';
     nameLabel.style.textShadow = '0 1px 4px rgba(0, 0, 0, 0.9), 0 0 4px #000';
-    nameLabel.style.opacity = '0.7';
+    nameLabel.style.opacity = '0.8';
     el.appendChild(nameLabel);
 
     // Glowing outer pulse ring
@@ -157,20 +147,7 @@ export default function GlobeScene({ pins, selectedPin, onSelectPin, onHoverPin 
     pulse.className = 'custom-globe-marker-pulse';
     el.appendChild(pulse);
 
-    // Hover Events
-    el.addEventListener('mouseenter', (e) => {
-      onHoverPin({ pin, x: e.clientX, y: e.clientY });
-      nameLabel.style.opacity = '1';
-    });
 
-    el.addEventListener('mouseleave', () => {
-      onHoverPin(null);
-      nameLabel.style.opacity = '0.7';
-    });
-
-    el.addEventListener('mousemove', (e) => {
-      onHoverPin({ pin, x: e.clientX, y: e.clientY });
-    });
 
     // Prevent propagation of mouse and pointer down/up events so OrbitControls doesn't rotate the globe or swallow clicks
     const blockPropagation = (e: Event) => {
@@ -199,7 +176,12 @@ export default function GlobeScene({ pins, selectedPin, onSelectPin, onHoverPin 
     <div
       ref={containerRef}
       className="w-full h-full relative cursor-grab active:cursor-grabbing"
-      onClick={() => onSelectPin(null)}
+      onClick={(e) => {
+        if ((e.target as HTMLElement).closest('.custom-globe-marker')) {
+          return;
+        }
+        onSelectPin(null);
+      }}
     >
       <Globe
         ref={globeRef}

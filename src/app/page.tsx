@@ -10,7 +10,6 @@ import { UserDetailPanel } from '@/components/UserDetailPanel';
 import { RoleLegend } from '@/components/RoleLegend';
 import { SearchPanel } from '@/components/SearchPanel';
 import { AddPinModal } from '@/components/AddPinModal';
-import { PinTooltip } from '@/components/PinTooltip';
 import { Compass } from 'lucide-react';
 
 // Dynamically import the Globe component to disable Server-Side Rendering (SSR)
@@ -35,7 +34,6 @@ function MainDashboard() {
   // App States
   const [dbPins, setDbPins] = useState<PinData[]>([]);
   const [selectedPin, setSelectedPin] = useState<PinData | null>(null);
-  const [hoveredPin, setHoveredPin] = useState<{ pin: PinData; x: number; y: number } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
@@ -132,12 +130,8 @@ function MainDashboard() {
           pins={dbPins}
           selectedPin={selectedPin}
           onSelectPin={setSelectedPin}
-          onHoverPin={setHoveredPin}
         />
       </div>
-
-      {/* Hover Tooltip Overlay */}
-      {hoveredPin && <PinTooltip hoverData={hoveredPin} />}
 
       {/* Slide-out peeking button at the left edge when collapsed */}
       {!isSidebarOpen && (
