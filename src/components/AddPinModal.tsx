@@ -247,10 +247,25 @@ export const AddPinModal: React.FC<AddPinModalProps> = ({ isOpen, onClose, onSuc
       onSuccess();
       onClose();
 
-    } catch (err) {
+    } catch (err: any) {
       console.error('Submission failed:', err);
-      const msg = err instanceof Error ? err.message : String(err);
-      toast('error', msg || 'Submission failed. Please check network settings and balance.');
+      let errorMsg = 'Submission failed. Please check network settings and balance.';
+      if (err) {
+        if (err.message) {
+          errorMsg = err.message;
+        } else if (err.details) {
+          errorMsg = err.details;
+        } else if (typeof err === 'string') {
+          errorMsg = err;
+        } else {
+          try {
+            errorMsg = JSON.stringify(err);
+          } catch {
+            errorMsg = String(err);
+          }
+        }
+      }
+      toast('error', errorMsg);
     } finally {
       setIsSubmitting(false);
       setStatusMessage('');

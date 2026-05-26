@@ -60,6 +60,9 @@ create table public.pins (
   device_hash text
 );
 
+-- Disable Row Level Security (RLS) to allow public wallet inserts
+alter table public.pins disable row level security;
+
 -- Index search for wallet addresses
 create index pins_wallet_idx on public.pins (wallet_address);
 
