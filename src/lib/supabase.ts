@@ -1,8 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 import { RIGLOB_CONFIG } from '@/config/riglob';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || RIGLOB_CONFIG.supabaseUrl;
+let supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || RIGLOB_CONFIG.supabaseUrl;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || RIGLOB_CONFIG.supabaseAnonKey;
+
+// Sanitize URL to ensure it doesn't contain a trailing /rest/v1/ or slash which would cause "Invalid path specified in request URL" errors
+if (supabaseUrl) {
+  supabaseUrl = supabaseUrl.replace(/\/rest\/v1\/?$/, '').trim();
+  supabaseUrl = supabaseUrl.replace(/\/$/, '').trim();
+}
 
 // Create a single supabase client instance for the client-side of the application
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
