@@ -204,6 +204,16 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         localStorage.removeItem('riglob_disconnected');
       }
       
+      // Request accounts permission to force the wallet selection / account modal to open
+      try {
+        await provider.request({
+          method: 'wallet_requestPermissions',
+          params: [{ eth_accounts: {} }],
+        });
+      } catch (permissionErr) {
+        console.warn('wallet_requestPermissions not supported or rejected:', permissionErr);
+      }
+      
       const accounts = await provider.request({ method: 'eth_requestAccounts' });
       const newAddress = accounts[0];
       setAddress(newAddress);
