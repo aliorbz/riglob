@@ -77,12 +77,50 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [getPublicClient]);
 
+  // Helper to parse Chain ID safely
+  const parseChainId = (val: any): number => {
+    if (typeof val === 'number') return val;
+    if (typeof val === 'string') {
+      if (val.startsWith('0x')) return parseInt(val, 16);
+      return parseInt(val, 10);
+    }
+    return 0;
+  };
+
+  // Helper to get standard or specific injected wallet provider
+  const getEthereumProvider = (): any => {
+    if (typeof window === 'undefined') return null;
+    const win = window as any;
+    
+    if (win.ethereum) {
+      if (win.ethereum.providers && Array.isArray(win.ethereum.providers)) {
+        const preferred = win.ethereum.providers.find((p: any) => p.isMetaMask) || win.ethereum.providers[0];
+        if (preferred) return preferred;
+      }
+      return win.ethereum;
+    }
+    if (win.trustwallet) return win.trustwallet;
+    if (win.rabby) return win.rabby;
+    if (win.okxwallet) return win.okxwallet;
+    if (win.coinbaseWalletExtension) return win.coinbaseWalletExtension;
+    if (win.phantom?.ethereum) return win.phantom.ethereum;
+    if (win.web3?.currentProvider) return win.web3.currentProvider;
+    
+    return null;
+  };
+
   // Handle chain/account changes
   const handleAccountsChanged = useCallback((accounts: string[]) => {
     if (accounts.length === 0) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('riglob_disconnected', 'true');
+      }
       setAddress(null);
       setBalance('0.0000');
     } else {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('riglob_disconnected');
+      }
       const newAddress = accounts[0];
       setAddress(newAddress);
       updateBalance(newAddress);
@@ -90,7 +128,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, [updateBalance]);
 
   const handleChainChanged = useCallback((hexChainId: string) => {
-    const numericChainId = parseInt(hexChainId, 16);
+    const numericChainId = parseChainId(hexChainId);
     setChainId(numericChainId);
     if (address) {
       updateBalance(address);
@@ -99,14 +137,18 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Auto connect if already authorized
   useEffect(() => {
-    if (typeof window === 'undefined' || !window.ethereum) return;
+    if (typeof window === 'undefined') return;
+    
+    // Prevent auto-reconnection if the user explicitly clicked disconnect in this session
+    if (localStorage.getItem('riglob_disconnected') === 'true') return;
 
-    const provider = window.ethereum as any;
+    const provider = getEthereumProvider();
+    if (!provider) return;
 
     const init = async () => {
       try {
         const chainHex = await provider.request({ method: 'eth_chainId' });
-        setChainId(parseInt(chainHex, 16));
+        setChainId(parseChainId(chainHex));
 
         const accounts = await provider.request({ method: 'eth_accounts' });
         if (accounts.length > 0) {
@@ -120,31 +162,54 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     init();
 
-    provider.on('accountsChanged', handleAccountsChanged);
-    provider.on('chainChanged', handleChainChanged);
+    if (provider.on) {
+      provider.on('accountsChanged', handleAccountsChanged);
+      provider.on('chainChanged', handleChainChanged);
+    }
 
     return () => {
-      provider.removeListener('accountsChanged', handleAccountsChanged);
-      provider.removeListener('chainChanged', handleChainChanged);
+      if (provider.removeListener) {
+        provider.removeListener('accountsChanged', handleAccountsChanged);
+        provider.removeListener('chainChanged', handleChainChanged);
+      }
     };
   }, [handleAccountsChanged, handleChainChanged, updateBalance]);
 
   // Connect Wallet Action
   const connect = async () => {
-    if (typeof window === 'undefined' || !window.ethereum) {
-      toast('error', 'No Ethereum provider found. Please install MetaMask.');
+    if (typeof window === 'undefined') return;
+
+    const provider = getEthereumProvider();
+    
+    if (!provider) {
+      // Direct deep link trigger for native mobile wallet browsers
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      if (isMobile) {
+        const dappUrl = window.location.href.replace(/^https?:\/\//, '');
+        const metamaskDeepLink = `https://metamask.app.link/dapp/${dappUrl}`;
+        toast('info', 'Redirecting to mobile Web3 wallet...');
+        setTimeout(() => {
+          window.open(metamaskDeepLink, '_blank');
+        }, 800);
+        return;
+      }
+
+      toast('error', 'No Web3 provider detected. Please install a wallet extension like MetaMask, OKX, or Trust Wallet.');
       return;
     }
 
     setIsConnecting(true);
     try {
-      const provider = window.ethereum as any;
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('riglob_disconnected');
+      }
+      
       const accounts = await provider.request({ method: 'eth_requestAccounts' });
       const newAddress = accounts[0];
       setAddress(newAddress);
       
       const chainHex = await provider.request({ method: 'eth_chainId' });
-      setChainId(parseInt(chainHex, 16));
+      setChainId(parseChainId(chainHex));
       
       await updateBalance(newAddress);
       toast('success', 'Wallet connected successfully!');
@@ -158,6 +223,9 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Disconnect Wallet Action
   const disconnect = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('riglob_disconnected', 'true');
+    }
     setAddress(null);
     setBalance('0.0000');
     toast('info', 'Wallet disconnected.');
@@ -165,9 +233,11 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Switch to or add Ritual Network
   const switchNetwork = async () => {
-    if (typeof window === 'undefined' || !window.ethereum) return;
+    if (typeof window === 'undefined') return;
 
-    const provider = window.ethereum as any;
+    const provider = getEthereumProvider();
+    if (!provider) return;
+
     const hexChainId = `0x${ritualChain.id.toString(16)}`;
 
     try {
@@ -177,7 +247,6 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       });
       toast('success', 'Switched to Ritual network!');
     } catch (switchError: any) {
-      // Code 4902 indicates that the chain has not been added to MetaMask
       if (switchError.code === 4902) {
         try {
           await provider.request({
@@ -204,15 +273,19 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Send Submission Fee Transaction
   const sendFeeTransaction = async (): Promise<string> => {
-    if (typeof window === 'undefined' || !window.ethereum || !address) {
+    if (typeof window === 'undefined' || !address) {
       throw new Error('Wallet not connected.');
+    }
+
+    const provider = getEthereumProvider();
+    if (!provider) {
+      throw new Error('Web3 provider not detected.');
     }
 
     if (!isCorrectNetwork) {
       throw new Error('Incorrect network. Please switch to Ritual testnet.');
     }
 
-    const provider = window.ethereum as any;
     const walletClient = createWalletClient({
       chain: ritualChain,
       transport: custom(provider),
