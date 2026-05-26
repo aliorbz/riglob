@@ -200,7 +200,7 @@ export default function GlobeScene({ pins, selectedPin, onSelectPin }: GlobeScen
         polygonsData={countries}
         polygonCapColor={() => 'rgba(0, 255, 102, 0.08)'} // Land part a bit greenish (very transparent green overlay)
         polygonSideColor={() => 'rgba(0, 0, 0, 0)'}
-        polygonStrokeColor={() => 'rgba(0, 255, 102, 0.3)'} // Thin neon green line separating countries (30% opacity)
+        polygonStrokeColor={() => 'rgba(0, 255, 102, 0.15)'} // Thin neon green line separating countries (15% opacity)
         polygonAltitude={0.006}
         onPolygonClick={() => onSelectPin(null)}
 
